@@ -1,0 +1,16 @@
+~/.gitignore
+training/dt11/_creandpuj_reference_rca_path.txt
+
+*.raw
+*.txt
+.DS_Store
+
+*.m~
+
+*.mhd
+models/
+results/
+test/
+Training_seg/
+Training_vessels/
+tmp_data/
