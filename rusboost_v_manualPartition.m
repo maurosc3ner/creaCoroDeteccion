@@ -16,7 +16,7 @@ elseif trainingMode==1
    %trainFile='BC_Circle_allvesselsTrain_OnlyC'
 elseif trainingMode==2
    %trainFile='tm2_L5_Train288'
-   trainFile='tm2_oob_L5_Train288'
+   trainFile='tm2_L5_Segments288'
    %trainFile='BC_Circle_allvesselsTrain_OnlyC'
 elseif trainingMode==3
    trainFile='tm3_L5_Train288'

@@ -43,9 +43,6 @@ yTrain=[];
 numves=0;
 tic
 %% Segment lecture
-    vesselTrainData=[];
-    vesselyTrain=[];
-%busqueda de segmentos
 MHD= dir(fullfile(inDir,'*.mhd'));
 for j =1:numel(MHD),
     
@@ -65,7 +62,8 @@ for j =1:numel(MHD),
     
     
     %key=input('key input');
-    
+    segmentTrainData=[];
+    segmentyTrain=[];
     for z0=round(L/2):1:dims(3)-round(L/2)+1     % loop through CPR
         
         % 3D Sampling pattern
@@ -153,51 +151,51 @@ for j =1:numel(MHD),
         feature=[feature A];
         %w = waitforbuttonpress;
         
-        vesselTrainData=[vesselTrainData;feature];
+        segmentTrainData=[segmentTrainData;feature];
         if trainingMode==0
             if reference(z0,6)>1.0
-                vesselyTrain=[vesselyTrain; 1];
+                segmentyTrain=[segmentyTrain; 1];
             else
-                vesselyTrain=[vesselyTrain; 0];
+                segmentyTrain=[segmentyTrain; 0];
             end
         elseif trainingMode==1
             if reference(z0,6)==2.0
-                vesselyTrain=[vesselyTrain; 1];
+                segmentyTrain=[segmentyTrain; 1];
             else
-                vesselyTrain=[vesselyTrain; 0];
+                segmentyTrain=[segmentyTrain; 0];
             end
             
         elseif trainingMode==2
             if reference(z0,6)>1.0
-                vesselyTrain=[vesselyTrain; 1];
+                segmentyTrain=[segmentyTrain; 1];
             elseif reference(z0,7)>1
-                vesselyTrain=[vesselyTrain; 1];
+                segmentyTrain=[segmentyTrain; 1];
             else
-                vesselyTrain=[vesselyTrain; 0];
+                segmentyTrain=[segmentyTrain; 0];
             end
         elseif trainingMode==3
             if reference(z0,6)>1.0
-                vesselyTrain=[vesselyTrain; 1];
+                segmentyTrain=[segmentyTrain; 1];
             elseif reference(z0,7)>1
-                vesselyTrain=[vesselyTrain; 2];
+                segmentyTrain=[segmentyTrain; 2];
             else
-                vesselyTrain=[vesselyTrain; 0];
+                segmentyTrain=[segmentyTrain; 0];
             end
         elseif trainingMode==4
             if reference(z0,7)>1.0
-                vesselyTrain=[vesselyTrain; 1];
+                segmentyTrain=[segmentyTrain; 1];
             else
-                vesselyTrain=[vesselyTrain; 0];
+                segmentyTrain=[segmentyTrain; 0];
             end
         else
-            vesselyTrain=[vesselyTrain; reference(z0,6)];
+            segmentyTrain=[segmentyTrain; reference(z0,6)];
         end
 
         
     end   %rof process vessel
     
-    trainData=[trainData;vesselTrainData];
-    yTrain=[yTrain; vesselyTrain];
+    trainData=[trainData;segmentTrainData];
+    yTrain=[yTrain; segmentyTrain];
 end
 toc
 
