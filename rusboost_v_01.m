@@ -37,7 +37,6 @@ tabulate(yTrain(istrain))
 %% RUSBOOST
 cltree = ClassificationTree.template('minleaf',5);
 tic
-<<<<<<< HEAD
 rusTree = fitensemble(trainData(istrain,:),yTrain(istrain),'RUSBoost',500,cltree,...
     'LearnRate',0.1,'nprint',100,'type','classification');
 toc
@@ -45,16 +44,7 @@ tic
 rusTree2 = fitensemble(trainData,yTrain,'RUSBoost',500,cltree,...
     'LearnRate',0.1,'nprint',100,'type','classification','kfold',4)%,...
 toc
-=======
-rusTree = fitensemble(trainData(istrain,:),yTrain(istrain),'RUSBoost',250,cltree,...
-    'LearnRate',0.1,'nprint',100);%,...
-toc
 
-tic
-rusTree2 = fitensemble(trainData,yTrain,'RUSBoost',250,cltree,...
-    'LearnRate',0.1,'nprint',100,'type','classification','kfold',3)%,...
-toc
->>>>>>> a1a64fd3e537c90e1d6448b5c4cb5923474799d5
 
 
 %% Test
@@ -65,19 +55,10 @@ hold on;
 plot(kfoldLoss(rusTree2,'mode','cumulative'),'r.');
 hold off;
 xlabel('Number of trees');
-<<<<<<< HEAD
+
 ylabel('Classification error');
 legend('Test (60:40)','4-fold Cross-validation','Location','NE');
-=======
-hold on;
-plot(kfoldLoss(rusTree2,'mode','cumulative'),'r.');
-hold off;
-xlabel('Number of trees');
-ylabel('Classification error');
-legend('Test (60:40)','3-Fold Cross-validation','Location','NE');
 
-
->>>>>>> a1a64fd3e537c90e1d6448b5c4cb5923474799d5
 % check confusion matrix
 tic
 Yfit = predict(rusTree,trainData(istest,:));
@@ -99,12 +80,9 @@ ACC=(TP+TN)/(TP+FN+FP+TN)
 PPV=TP/(TP+FP)
 NPV=TN/(FN+TN)
 
-<<<<<<< HEAD
 
 save models/rb500_TM3_seg_AP60 rusTree rusTree2 cm cm2
-=======
-save models/rb250_TM2_seg_AP60 rusTree rusTree2 cm cm2
->>>>>>> a1a64fd3e537c90e1d6448b5c4cb5923474799d5
+
 
 %% Roc curve
 % binary class

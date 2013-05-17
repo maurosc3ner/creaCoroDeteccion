@@ -261,13 +261,12 @@ toc
 %modelFile = 'rb500_CMBC_MP_WC51';
 %modelFile = 'rusboost500_BT_allvesselsTrain'
 %modelFile = 'rb500_TM3_MC_MP75'
-<<<<<<< HEAD
 %modelFile = 'rb250_TM2_seg_MP66'
 modelFile = 'rb500_TM3_seg_AP60'
 =======
 %modelFile = 'rb250_TM2_oob_MP66'
-modelFile = 'rb250_TM2_seg_AP60'
->>>>>>> a1a64fd3e537c90e1d6448b5c4cb5923474799d5
+%modelFile = 'rb250_TM2_seg_AP60'
+
 %modelFile = 'rb500_CMBC_MP80'
 vars={'rusTree'};
 load(strcat('models/',modelFile,'.mat'),vars{:});
