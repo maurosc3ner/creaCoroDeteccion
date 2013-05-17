@@ -2,7 +2,7 @@
 %*  mhd2mat
 %*  
 %***************************
-%
+%   read every segment.mhd and conver to .mat
 %******************************
 
 mkdir tmp_data;

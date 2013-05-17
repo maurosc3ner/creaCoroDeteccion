@@ -4,7 +4,7 @@ mkdir models
 %% Training mode 
 % 0-> binary 0=healthy,soft|1=calc,mix
 % 1-> binary 0=healthy,soft,mix|1=calc
-trainingMode=3;
+trainingMode=2;
 
 %% file lecture
 if trainingMode==0
@@ -14,7 +14,8 @@ elseif trainingMode==1
    trainFile='BC_L5_allvesselsTrain_OnlyC'
    %trainFile='BC_Circle_allvesselsTrain_OnlyC'
 elseif trainingMode==2
-   trainFile='tm2_L5_Train288'
+   %trainFile='tm2_L5_Train288'
+   trainFile='tm2_L5_Segments288'
    %trainFile='BC_Circle_allvesselsTrain_OnlyC'
 elseif trainingMode==3
    trainFile='tm3_L5_Segments288'
@@ -36,6 +37,7 @@ tabulate(yTrain(istrain))
 %% RUSBOOST
 cltree = ClassificationTree.template('minleaf',5);
 tic
+<<<<<<< HEAD
 rusTree = fitensemble(trainData(istrain,:),yTrain(istrain),'RUSBoost',500,cltree,...
     'LearnRate',0.1,'nprint',100,'type','classification');
 toc
@@ -43,20 +45,39 @@ tic
 rusTree2 = fitensemble(trainData,yTrain,'RUSBoost',500,cltree,...
     'LearnRate',0.1,'nprint',100,'type','classification','kfold',4)%,...
 toc
+=======
+rusTree = fitensemble(trainData(istrain,:),yTrain(istrain),'RUSBoost',250,cltree,...
+    'LearnRate',0.1,'nprint',100);%,...
+toc
+
+tic
+rusTree2 = fitensemble(trainData,yTrain,'RUSBoost',250,cltree,...
+    'LearnRate',0.1,'nprint',100,'type','classification','kfold',3)%,...
+toc
+>>>>>>> a1a64fd3e537c90e1d6448b5c4cb5923474799d5
 
 
 %% Test
 figure;
-tic
 plot(loss(rusTree,trainData(istest,:),yTrain(istest),'mode','cumulative'));
-toc
 grid on;
 hold on;
 plot(kfoldLoss(rusTree2,'mode','cumulative'),'r.');
 hold off;
 xlabel('Number of trees');
+<<<<<<< HEAD
 ylabel('Classification error');
 legend('Test (60:40)','4-fold Cross-validation','Location','NE');
+=======
+hold on;
+plot(kfoldLoss(rusTree2,'mode','cumulative'),'r.');
+hold off;
+xlabel('Number of trees');
+ylabel('Classification error');
+legend('Test (60:40)','3-Fold Cross-validation','Location','NE');
+
+
+>>>>>>> a1a64fd3e537c90e1d6448b5c4cb5923474799d5
 % check confusion matrix
 tic
 Yfit = predict(rusTree,trainData(istest,:));
@@ -65,10 +86,11 @@ tab = tabulate(yTrain(istest));
 cm=confusionmat(yTrain(istest),Yfit)
 cm2=bsxfun(@rdivide,cm,tab(:,2))*100
 
-TP=cm(1,1)
-TN=cm(2,2)
-FP=cm(1,2)
-FN=cm(2,1)
+% Measures
+TN=cm(1,1)
+TP=cm(2,2)
+FN=cm(1,2)
+FP=cm(2,1)
 
 SEN=TP/(TP+FN)
 FPR=FP/(FP+TN);
@@ -77,8 +99,12 @@ ACC=(TP+TN)/(TP+FN+FP+TN)
 PPV=TP/(TP+FP)
 NPV=TN/(FN+TN)
 
+<<<<<<< HEAD
 
 save models/rb500_TM3_seg_AP60 rusTree rusTree2 cm cm2
+=======
+save models/rb250_TM2_seg_AP60 rusTree rusTree2 cm cm2
+>>>>>>> a1a64fd3e537c90e1d6448b5c4cb5923474799d5
 
 %% Roc curve
 % binary class
