@@ -45,7 +45,7 @@ globalVessel=true;
 % 2-> binary 0=healthy|1=calc,mix,narr>50
 % 3-> multi 0=healthy|1=calc,mix|2=narr>50
 % 4-> binary 0=healthy|1=grade narrowing>50
-trainingMode=2;
+trainingMode=3;
 
 %% Cylinder mask creation
 min_r=1;
@@ -261,7 +261,8 @@ toc
 %modelFile = 'rb500_CMBC_MP_WC51';
 %modelFile = 'rusboost500_BT_allvesselsTrain'
 %modelFile = 'rb500_TM3_MC_MP75'
-modelFile = 'rb250_TM2_oob_MP66'
+%modelFile = 'rb250_TM2_seg_MP66'
+modelFile = 'rb500_TM3_seg_AP60'
 %modelFile = 'rb500_CMBC_MP80'
 vars={'rusTree'};
 load(strcat('models/',modelFile,'.mat'),vars{:});

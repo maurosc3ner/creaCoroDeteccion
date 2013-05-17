@@ -92,7 +92,7 @@ plot(kfoldLoss(rusTree2,'mode','cumulative'),'r.');
 hold off;
 xlabel('Number of trees');
 ylabel('Classification error');
-legend('Test','Cross-validation','Location','NE');
+legend('Test (66:33)','4-fold Cross-validation','Location','NE');
 
 % check confusion matrix
 tic
@@ -102,7 +102,7 @@ tab = tabulate(y_test_data);
 cm=confusionmat(y_test_data,Yfit)
 cm2=bsxfun(@rdivide,cm,tab(:,2))*100
 
-save models/rb250_TM2_oob_MP66 rusTree cm cm2
+save models/rb250_TM2_seg_MP66 rusTree rusTree2 cm cm2
 
 %% Roc curve
 % binary class

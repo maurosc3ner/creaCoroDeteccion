@@ -27,7 +27,7 @@ visualDebug=false;
 % 2-> binary 0 healthy|1=calc,mix,narr>50
 % 3-> multi 0=healthy|1=calc,mix|2=narr>50
 % 4-> binary 0=healthy|1=grade narrowing>50
-trainingMode=2;
+trainingMode=3;
 
 %% Cylinder mask creation
 min_r=1;
