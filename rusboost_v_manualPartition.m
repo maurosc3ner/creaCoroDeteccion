@@ -44,8 +44,8 @@ p = randperm(row_pos);
 n = randperm(row_neg);
 
 % 80-20 split for training and test
-tstpf = p(1:round(row_pos/3));
-tstnf = n(1:round(row_neg/3));
+tstpf = p(1:round(row_pos/4));
+tstnf = n(1:round(row_neg/4));
 trpf = setdiff(p, tstpf);
 trnf = setdiff(n, tstnf);
 
@@ -70,7 +70,7 @@ y_train_data2 = [ ones(size(pos_data,1),1);...
 
 % tabulate(y_train_data)
 %% RUSBOOST
-cltree = ClassificationTree.template('minleaf',1);
+cltree = ClassificationTree.template('minleaf',5);
 tic
 rusTree = fitensemble(train_data,y_train_data,'RUSBoost',250,cltree,...
     'LearnRate',0.1,'nprint',100)%,...

@@ -4,7 +4,7 @@ mkdir models
 %% Training mode 
 % 0-> binary 0=healthy,soft|1=calc,mix
 % 1-> binary 0=healthy,soft,mix|1=calc
-trainingMode=3;
+trainingMode=2;
 
 %% file lecture
 if trainingMode==0
@@ -14,7 +14,8 @@ elseif trainingMode==1
    trainFile='BC_L5_allvesselsTrain_OnlyC'
    %trainFile='BC_Circle_allvesselsTrain_OnlyC'
 elseif trainingMode==2
-   trainFile='tm2_L5_Train288'
+   %trainFile='tm2_L5_Train288'
+   trainFile='tm2_L5_Segments288'
    %trainFile='BC_Circle_allvesselsTrain_OnlyC'
 elseif trainingMode==3
    trainFile='tm3_L5_Train288'
@@ -28,31 +29,36 @@ load(strcat('tmp_data/',trainFile,'.mat'));
 tabulate(yTrain)
 
 %% Barajamiento de datos
-part = cvpartition(yTrain,'holdout',0.3);
+part = cvpartition(yTrain,'holdout',0.4);
 istrain = training(part); % data for fitting
 istest = test(part); % data for quality assessment
 tabulate(yTrain(istrain))
 
 %% RUSBOOST
-cltree = ClassificationTree.template('minleaf',1);
+cltree = ClassificationTree.template('minleaf',5);
 tic
 rusTree = fitensemble(trainData(istrain,:),yTrain(istrain),'RUSBoost',250,cltree,...
     'LearnRate',0.1,'nprint',100);%,...
-    % 'cost',[0 1;1 0]); 
-    %,'RatioToSmallest',[1 1]);
 toc
-%'RatioToSmallest',...
- %   [2 1]
+
+tic
+rusTree2 = fitensemble(trainData,yTrain,'RUSBoost',250,cltree,...
+    'LearnRate',0.1,'nprint',100,'type','classification','kfold',3)%,...
+toc
 
 
 %% Test
 figure;
-tic
 plot(loss(rusTree,trainData(istest,:),yTrain(istest),'mode','cumulative'));
-toc
 grid on;
 xlabel('Number of trees');
-ylabel('Test classification error');
+hold on;
+plot(kfoldLoss(rusTree2,'mode','cumulative'),'r.');
+hold off;
+xlabel('Number of trees');
+ylabel('Classification error');
+legend('Test (60:40)','3-Fold Cross-validation','Location','NE');
+
 
 % check confusion matrix
 tic
@@ -60,12 +66,13 @@ Yfit = predict(rusTree,trainData(istest,:));
 toc
 tab = tabulate(yTrain(istest));
 cm=confusionmat(yTrain(istest),Yfit)
-cm2=bsxfun(@rdivide,cm,tab(:,2))*100;
+cm2=bsxfun(@rdivide,cm,tab(:,2))*100
 
-TP=cm(1,1)
-TN=cm(2,2)
-FP=cm(1,2)
-FN=cm(2,1)
+% Measures
+TN=cm(1,1)
+TP=cm(2,2)
+FN=cm(1,2)
+FP=cm(2,1)
 
 SEN=TP/(TP+FN)
 FPR=FP/(FP+TN);
@@ -74,8 +81,7 @@ ACC=(TP+TN)/(TP+FN+FP+TN)
 PPV=TP/(TP+FP)
 NPV=TN/(FN+TN)
 
-
-save models/rb500_225CMBC_AP80 rusTree cm cm2
+save models/rb250_TM2_seg_AP60 rusTree rusTree2 cm cm2
 
 %% Roc curve
 % binary class
