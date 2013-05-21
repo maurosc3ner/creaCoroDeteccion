@@ -27,7 +27,12 @@ visualDebug=false;
 % 2-> binary 0 healthy|1=calc,mix,narr>50
 % 3-> multi 0=healthy|1=calc,mix|2=narr>50
 % 4-> binary 0=healthy|1=grade narrowing>50
-trainingMode=3;
+trainingMode=4;
+
+%% Lecture mode (decision criters)
+% 0-> .mhd slowly
+% 1-> .mat compressed (faster)
+lectureMode=1;
 
 %% Cylinder mask creation
 min_r=1;
@@ -47,19 +52,20 @@ MHD= dir(fullfile(inDir,'*.mhd'));
 for j =1:numel(MHD),
     
     %% Files lecture
-
-    refFilename=fullfile(inDir,[MHD(j).name(1:end-4) '.txt'])
-    
-    cprFilename=fullfile(inDir,MHD(j).name);
-    reference=load(refFilename);
-    info = mha_read_header(cprFilename)
-    V = mha_read_volume(info);
-    numves=numves+1;
+    if lectureMode==0
+        refFilename=fullfile(inDir,[MHD(j).name(1:end-4) '.txt'])
+        cprFilename=fullfile(inDir,MHD(j).name);
+        reference=load(refFilename);
+        info = mha_read_header(cprFilename)
+        V = mha_read_volume(info);
+    elseif lectureMode==1
+       load ([inDir MHD(j).name(1:end-4) '.mat'])
+    end
+    numves=numves+1
     %Process
     [dims]=size(V);
     [fx fy fz]=gradient(V);
     x0 = round(dims(1)/2); y0 = round(dims(2)/2);
-    
     
     %key=input('key input');
     segmentTrainData=[];
