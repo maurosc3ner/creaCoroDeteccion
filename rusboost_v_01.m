@@ -4,7 +4,7 @@ mkdir models
 %% Training mode 
 % 0-> binary 0=healthy,soft|1=calc,mix
 % 1-> binary 0=healthy,soft,mix|1=calc
-trainingMode=2;
+trainingMode=3;
 
 %% file lecture
 if trainingMode==0
