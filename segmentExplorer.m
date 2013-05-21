@@ -33,6 +33,8 @@ yTrain=[];
 numseg=0;
 ssCounter=0;
 ssList=[];
+hsCounter=0;
+hsList=[];
 L=5;
 tic
 %% Segment lecture
@@ -100,23 +102,15 @@ for j =1:numel(MHD),
     
     if(sickSegFlag==1)
         ssCounter=ssCounter+1;
-        ssList{ssCounter}={[MHD(j).name(1:end-4)]};
+        ssList=[MHD(j); ssList];
+    else
+        hsCounter=hsCounter+1;
+        hsList=[MHD(j); hsList];
+        %hsList{hsCounter}={MHD(j).name(1:end-4)};
     end
     yTrain=[yTrain; segmentyTrain];
 end
 toc
-
-
-
-hsList=[];
-for i=1:numel(ssList)
-    for j=1:numel(MHD)
-        temp=char(ssList{i});
-        if (strcmp(temp,MHD(j).name(1:end-4)))
-            hsList=[hsList; j];
-        end
-    end
-end
 
 for (i=1:numel(hsList))
 MHD(hsList(i)).name(1:end-4)
@@ -124,3 +118,27 @@ end
 
 [trainingMode numseg ssCounter 14]
 %     2   245    63    14
+
+% Random permuation of positive and negative data points
+p = randperm(numel(ssList));
+n = randperm(numel(hsList));
+
+% 80-20 split for training and test
+tstpf = p(1:round(numel(ssList)/5));
+tstnf = n(1:round(numel(hsList)/5));
+trpf = setdiff(p, tstpf);
+trnf = setdiff(n, tstnf);
+% 
+% c = randperm(numel(ssList));
+%     s = randperm(numel(hsList));
+%     h = randperm(numel(hsList));
+% 
+%     % 66-33 split for training and test
+%     tstsf = s(1:round(row_soft/5));
+%     tstcf = c(1:round(row_calc/5));
+%     tsthf = h(1:round(row_heal/5));
+%     trsf = setdiff(s, tstsf);
+%     trcf = setdiff(c, tstcf);
+%     trhf = setdiff(h, tsthf);
+
+save 'tmp_data/TM4_oob_list' tstpf tstnf trpf trnf ssList hsList
