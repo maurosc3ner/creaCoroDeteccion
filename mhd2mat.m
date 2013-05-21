@@ -30,7 +30,7 @@ for j =1:numel(MHD),
     outputPath=fullfile(inDir,[MHD(j).name(1:end-4) '.mat']);
     
     save(outputPath,'reference','info','V')
-    key=input('input key')
+    %key=input('input key')
    
 end
 toc

@@ -4,7 +4,10 @@ mkdir models
 %% Training mode 
 % 0-> binary 0=healthy,soft|1=calc,mix
 % 1-> binary 0=healthy,soft,mix|1=calc
-trainingMode=2;
+% 2-> binary 0=healthy|1=calc,mix,narr>50
+% 3-> multi 0=healthy|1=calc,mix|2=narr>50
+% 4-> binary 0=healthy|1=grade narrowing>50
+trainingMode=4;
 
 %% file lecture
 if trainingMode==0
@@ -19,7 +22,10 @@ elseif trainingMode==2
    %trainFile='BC_Circle_allvesselsTrain_OnlyC'
 elseif trainingMode==3
    trainFile='tm3_L5_Segments288'
-   %trainFile='BC_Circle_allvesselsTrain_OnlyC'   
+   %trainFile='BC_Circle_allvesselsTrain_OnlyC'
+elseif trainingMode==4
+   trainFile='tm4_L5_Segments288'
+   %trainFile='BC_Circle_allvesselsTrain_OnlyC'     
 else
     trainFile='MC_L5_allvesselsTrain'
 end
@@ -55,7 +61,6 @@ hold on;
 plot(kfoldLoss(rusTree2,'mode','cumulative'),'r.');
 hold off;
 xlabel('Number of trees');
-
 ylabel('Classification error');
 legend('Test (60:40)','4-fold Cross-validation','Location','NE');
 
@@ -81,7 +86,7 @@ PPV=TP/(TP+FP)
 NPV=TN/(FN+TN)
 
 
-save models/rb500_TM3_seg_AP60 rusTree rusTree2 cm cm2
+save models/rb500_TM4_seg_AP60 rusTree rusTree2 cm cm2
 
 
 %% Roc curve

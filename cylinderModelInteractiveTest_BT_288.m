@@ -232,7 +232,7 @@ for j=str2num(answer{1}),
                 end
             %% binary 0=healthy|1=grade narrowing>50
             elseif trainingMode==4
-                disp('modo 1')
+                disp('modo 4')
                 if reference(z0,7)>1.0
                     vesselyTest=[vesselyTest;...
                     [reference(z0,1) reference(z0,2) reference(z0,3) 1.0]];
@@ -263,7 +263,7 @@ toc
 %modelFile = 'rb500_TM3_MC_MP75'
 %modelFile = 'rb250_TM2_seg_MP66'
 modelFile = 'rb500_TM3_seg_AP60'
-=======
+%modelFile = 'rb500_TM4_seg_AP60'
 %modelFile = 'rb250_TM2_oob_MP66'
 %modelFile = 'rb250_TM2_seg_AP60'
 
