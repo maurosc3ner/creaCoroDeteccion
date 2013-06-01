@@ -1,7 +1,5 @@
 %***************************
-%*  3D Cylinder Model:
-%*  I,Gr,Gt,Radon
-%   Longitudinal 
+%*  Segment explorer for partitioning purposes
 %   Desgined for segment training
 %*  2013,4,11
 %*  References :
@@ -27,7 +25,7 @@ visualDebug=false;
 % 2-> binary 0 healthy|1=calc,mix,narr>50
 % 3-> multi 0=healthy|1=calc,mix|2=narr>50
 % 4-> binary 0=healthy|1=grade narrowing>50
-trainingMode=4;
+trainingMode=0;
 
 yTrain=[];
 numseg=0;
@@ -112,20 +110,34 @@ for j =1:numel(MHD),
 end
 toc
 
-for (i=1:numel(hsList))
-MHD(hsList(i)).name(1:end-4)
+% print healthy Segment list
+for i=1:numel(hsList)
+   hsList(i).name(1:end-4)
+end
+
+% print sick Segment list
+for i=1:numel(ssList)
+   ssList(i).name(1:end-4)
 end
 
 [trainingMode numseg ssCounter 14]
 %     2   245    63    14
+fname='tm0_segments.txt';
+fid=fopen(fname,'W');
+if fid~=-1
+    for i=1:numel(ssList)
+       fprintf(fid,'%s\n',ssList(i).name(1:end-4));
+    end
+end
+fclose(fid);
 
 % Random permuation of positive and negative data points
 p = randperm(numel(ssList));
 n = randperm(numel(hsList));
 
 % 80-20 split for training and test
-tstpf = p(1:round(numel(ssList)/5));
-tstnf = n(1:round(numel(hsList)/5));
+tstpf = p(1:round(numel(ssList)/10));
+tstnf = n(1:round(numel(hsList)/10));
 trpf = setdiff(p, tstpf);
 trnf = setdiff(n, tstnf);
 % 
@@ -141,4 +153,4 @@ trnf = setdiff(n, tstnf);
 %     trcf = setdiff(c, tstcf);
 %     trhf = setdiff(h, tsthf);
 
-save 'tmp_data/TM4_oob_list' tstpf tstnf trpf trnf ssList hsList
+save 'tmp_data/TM0_90_oob_list' tstpf tstnf trpf trnf ssList hsList

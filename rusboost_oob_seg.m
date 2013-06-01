@@ -18,13 +18,12 @@ mkdir models
 % 2-> binary 0=healthy|1=calc,mix,narr>50
 % 3-> multi 0=healthy|1=calc,mix|2=narr>50
 % 4-> binary 0=healthy|1=grade narrowing>50
-trainingMode=4;
+trainingMode=0;
 
 
 %% file lecture
 if trainingMode==0
-    trainFile='BC_L5_Train288'
-    %trainFile='BC_Circle_allvesselsTrain'
+    trainFile='tm0_90_oob_L5_Segments288'
 elseif trainingMode==1
    trainFile='BC_L5_allvesselsTrain_OnlyC'
    %trainFile='BC_Circle_allvesselsTrain_OnlyC'

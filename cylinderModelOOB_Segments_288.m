@@ -26,12 +26,12 @@ visualDebug=false;
 % 2-> binary 0 healthy|1=calc,mix,narr>50
 % 3-> multi 0=healthy|1=calc,mix|2=narr>50
 % 4-> binary 0=healthy|1=grade narrowing>50
-trainingMode=4;
+trainingMode=0;
 
 %% Lecture mode (decision criters)
 % 0-> .mhd slowly
 % 1-> .mat compressed (faster)
-lectureMode=1;
+lectureMode=0;
 
 %% Cylinder mask creation
 min_r=1;
@@ -47,7 +47,10 @@ yTrain=[];
 numves=0;
 
 %% Selective Segment lecture
-if trainingMode==2
+
+if trainingMode==0
+load 'tmp_data/TM0_90_oob_list'
+elseif trainingMode==2
 load 'tmp_data/TM2_oob_list'
 elseif trainingMode==4
 load 'tmp_data/TM4_oob_list'
@@ -212,9 +215,7 @@ end
 toc
 
 %% Selective Testing Segment lecture
-if trainingMode==2
-load 'tmp_data/TM2_oob_list'
-end
+
 MHD=[hsList(tstnf);ssList(tstpf)];
 testData=[];
 yTest=[];
@@ -377,7 +378,7 @@ toc
 
 
 if trainingMode==0
-    save 'tmp_data/tm0_L5_Segments288' trainData yTrain
+    save 'tmp_data/tm0_90_oob_L5_Segments288' trainData yTrain testData yTest
 elseif trainingMode==1
    save 'tmp_data/tm1_oob_L5_Segments288' trainData yTrain testData yTest
 elseif trainingMode==2
