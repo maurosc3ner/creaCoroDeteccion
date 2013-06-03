@@ -14,7 +14,7 @@ mkdir tmp_data;
 clear all; clc; close all;
 addpath src
 addpath ../ReadData3D_version1k/mha
-inDir = 'Training_vessels/';
+inDir = 'Training_SelVes/';
 
 %busqueda de carpetas
 DT= dir(fullfile(inDir,'dt*'));
@@ -57,7 +57,9 @@ for j =1:numel(DT),
         cprFilename=fullfile(inDT,MHD(vessel_i).name);
         reference=load(refFilename);
         info = mha_read_header(cprFilename)
-
+        
+        distanceAcc=OstDistance(reference);
+        
         numves=numves+1;
         %Process
         [dims]=size(reference);
