@@ -24,6 +24,7 @@ DT= dir(fullfile(inDir,'dt*'));
 
 %% Flags
 visualDebug=false;
+includeDistance=false;
 %% Training mode (decision criters)
 % 0-> binary 0=healthy,soft|1=calc,mix
 % 1-> binary 0=healthy,soft,mix|1=calc
@@ -173,9 +174,9 @@ for j =1:numel(DT),
             feature=[feature A];
             
             % adding distance feature
-            feature=[feature reference(z0,8)];
-            %w = waitforbuttonpress;
-
+            if includeDistance
+                feature=[feature reference(z0,8)];
+            end
             vesselTrainData=[vesselTrainData;feature];
             if trainingMode==0
                 if reference(z0,6)>1.0
@@ -359,8 +360,9 @@ for j =1:numel(DT),
             feature=[feature A];
             
             % adding distance feature
-            feature=[feature reference(z0,8)];
-
+            if includeDistance
+                feature=[feature reference(z0,8)];
+            end
             vesselTestData=[vesselTestData;feature];
             %%
             if trainingMode==0
@@ -434,5 +436,5 @@ toc
 
 
 if trainingMode==0
-    save 'tmp_data/tm0_oob_L5_Train289' trainData yTrain testData yTest
+    save 'tmp_data/tm0_oob_L5_SelVes288' trainData yTrain testData yTest
 end

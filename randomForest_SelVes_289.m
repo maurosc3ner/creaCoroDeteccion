@@ -1,16 +1,3 @@
-%***************************
-%*  RUSBoost:
-%*  Out of bag
-%   289 features (distance from ostium)
-%   
-%*  2013,6,2
-%*  References :
-%*  Seiffert et al, 
-%*  
-%***************************
-%
-%******************************
-
 clear all; clc; close all;
 mkdir models
 %% Flags
@@ -25,7 +12,7 @@ trainingMode=0;
 
 %% file lecture
 if trainingMode==0
-    trainFile='tm0_oob_L5_SelVes288'
+    trainFile='tm0_oob_L5_SelVes289'
 elseif trainingMode==1
    trainFile='BC_L5_allvesselsTrain_OnlyC'
    %trainFile='BC_Circle_allvesselsTrain_OnlyC'
@@ -49,45 +36,52 @@ tabulate(yTrain)
 tabulate(yTest(:,4))
 
 
-%% RUSBOOST
-cltree = ClassificationTree.template('minleaf',5);
+%% Randon Forest
 tic
-rusTree = fitensemble(trainData,yTrain,'RUSBoost',250,cltree,...
-    'LearnRate',0.1,'nprint',100,'type','classification');
-toc
-tic
-rusTree2 = fitensemble([trainData; testData],[yTrain;yTest(:,4)] ,'RUSBoost',250,cltree,...
-    'LearnRate',0.1,'nprint',100,'type','classification','kfold',4)%,...
+rf = TreeBagger(250,trainData,yTrain,...
+    'method','classification','NVarToSample','all','nprint',100,...
+    'minleaf',5,'oobvarimp','on')
 toc
 
+tic
+rf2 = TreeBagger(250,[trainData; testData],[yTrain;yTest(:,4)],...
+    'method','classification','NVarToSample','all','nprint',100,...
+    'minleaf',5,'oobvarimp','on','kfold',4)
+toc
+
+load models/rb250_tm0_oob_SelVes_288 rusTree rusTree2 cm cm2
 
 
 %% Test
 figure1=figure('Color',[1 1 1]);
-hold on;
-plot(loss(rusTree,testData,yTest(:,4),'mode','cumulative'),'r.');
+hold on
+plot(oobError(rf));
 grid on;
 hold on;
-plot(kfoldLoss(rusTree2,'mode','cumulative'),'r.');
+plot(kfoldLoss(rf2,'mode','cumulative'),'r.');
 hold off;
-title('RB VS RF Comparison');
-xlabel('Number of trees');
-ylabel('Classification error');
-legend('RUSBoost','Random Forest','Location','NE');
+xlabel('Number of grown trees');
+ylabel('Random Forest Classification error');
+legend('Test (60:40)','4-fold Cross-validation','Location','NE');
+
+
+
 
 % check confusion matrix
 tic
-Yfit = predict(rusTree,testData);
+Yfit = predict(rf,testData);
 toc
 tab = tabulate(yTest(:,4));
-cm=confusionmat(yTest(:,4),Yfit)
+cm=confusionmat(yTest(:,4),str2num(cell2mat(Yfit)))
 cm2=bsxfun(@rdivide,cm,tab(:,2))*100
+
 
 % Measures
 TN=cm(1,1);
 TP=cm(2,2);
 FN=cm(1,2);
 FP=cm(2,1);
+
 %TrueNegat TruePosi FalseNeg FalsePosit
 [TN TP FN FP]
 
@@ -97,11 +91,11 @@ SPC=TN/(FP+TN);
 ACC=(TP+TN)/(TP+FN+FP+TN);
 PPV=TP/(TP+FP);
 NPV=TN/(FN+TN);
+
 %Sensit Specifi Accuracy FalsePRate PositiPValue NegPValue
 [SEN SPC ACC FPR PPV NPV]
 
-save models/rb250_tm0_oob_SelVes_288 rusTree rusTree2 cm cm2
-
+save models/rbVSrf_250_tm0_oob_SelVes_289 rusTree rf 
 
 %% Roc curve
 % binary class
