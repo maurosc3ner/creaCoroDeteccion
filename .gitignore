@@ -13,4 +13,5 @@ results/
 test/
 Training_seg/
 Training_vessels/
+Testing_SelVes/
 tmp_data/

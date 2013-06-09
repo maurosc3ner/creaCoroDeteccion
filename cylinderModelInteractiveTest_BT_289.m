@@ -47,6 +47,13 @@ globalVessel=true;
 % 4-> binary 0=healthy|1=grade narrowing>50
 trainingMode=0;
 
+%% Classifier
+% 0-> AdaboostM1
+% 1-> RUSBoost
+% 2-> Random Forest
+classifierMode=0;
+
+
 %% Cylinder mask creation
 min_r=1;
 max_r=3.5;
@@ -91,6 +98,12 @@ for j=str2num(answer{1}),
         
         cprFilename=fullfile(inDT,MHD(vessel_i).name);
         reference=load(refFilename);
+        
+        % calling Ostium distance feature
+        dist=OstDistance(reference);
+        % attaching to the reference file
+        reference=[reference, dist];
+        
         info = mha_read_header(cprFilename)
         V = mha_read_volume(info);
 
@@ -185,7 +198,7 @@ for j=str2num(answer{1}),
 
             feature=[feature A];
             %w = waitforbuttonpress;
-
+            feature=[feature reference(z0,8)];
             vesselTestData=[vesselTestData;feature];
             %%
             if trainingMode==0
@@ -257,25 +270,30 @@ for j=str2num(answer{1}),
 end
 toc
 
-%yTarget(:,4)=yTarget(:,4)+1;
-%modelFile = 'rb500_CMBC_MP_WC51';
-%modelFile = 'rusboost500_BT_allvesselsTrain'
-%modelFile = 'rb500_TM3_MC_MP75'
-%modelFile = 'rb250_TM2_seg_MP66'
-modelFile = 'rb500_TM3_seg_AP60'
-%modelFile = 'rb500_TM4_seg_AP60'
-%modelFile = 'rb250_TM2_oob_MP66'
-%modelFile = 'rb250_TM2_seg_AP60'
 
-%modelFile = 'rb500_CMBC_MP80'
-vars={'rusTree'};
+modelFile = 'rbVSrf_250_tm0_oob_SelVes_289'
+
+if classifierMode==0
+   ML = 'adb';
+else if classifierMode==1
+   ML = 'rusTree';
+    end
+end
+
+vars={ML};
+
 load(strcat('models/',modelFile,'.mat'),vars{:});
 
 %% Test
 
 % check confusion matrix
 tic
-Yfit = predict(rusTree,testData);
+if classifierMode==0
+    Yfit = predict(adb,testData);
+else if classifierMode==1
+    Yfit = predict(rusTree,testData);
+    end
+end
 toc
 
 tab = tabulate(yTarget(:,4));
@@ -286,29 +304,25 @@ end
 cm=confusionmat(yTarget(:,4),Yfit)
 cm2=bsxfun(@rdivide,cm,tab2(:))*100
 
-%saving dataset results
-if globalVessel
-yTargetTotal=[];
-yFitTotal=[];
-    %load tmp_data/gvEval
-
-    yTargetTotal=[yTargetTotal; yTarget];
-    yFitTotal=[yFitTotal; Yfit];
-    save tmp_data/gvEval yTargetTotal yFitTotal
-end
 
 % Measures
-TN=cm(1,1)
-TP=cm(2,2)
-FN=cm(1,2)
-FP=cm(2,1)
+TN=cm(2,2);
+TP=cm(1,1);
+FN=cm(1,2);
+FP=cm(2,1);
 
-SEN=TP/(TP+FN)
+SEN=TP/(TP+FN);
 FPR=FP/(FP+TN);
-SPC=TN/(FP+TN)
-ACC=(TP+TN)/(TP+FN+FP+TN)
-PPV=TP/(TP+FP)
-NPV=TN/(FN+TN)
+SPC=TN/(FP+TN);
+ACC=(TP+TN)/(TP+FN+FP+TN);
+PPV=TP/(TP+FP);
+NPV=TN/(FN+TN);
+
+%TrueNegat TruePosi FalseNeg FalsePosit
+[TN TP FN FP]
+%Sensit Specifi Accuracy FalsePRate PositiPValue NegPValue
+[SEN SPC ACC PPV NPV]
+
 
 %offset insertion
 yTarget=[reference(1:round(L/2)+sliceOffset-1,1)...
@@ -320,10 +334,6 @@ yTarget=[reference(1:round(L/2)+sliceOffset-1,1)...
     reference(z0+1:steps+L+sliceOffset,3)]]; 
 Yfit=[reference(1:round(L/2)+sliceOffset-1,6); Yfit ;reference(z0+1:steps+L+sliceOffset,6)];
 
-yffl=strcat('results/',DT(j).name,MHD(vessel_i).name(1:end-4),modelFile,'.txt');
-dlmwrite(yffl,[yTarget (Yfit)*40],'Delimiter',' ',...
-                'Newline','unix','precision',6);
-
 %% finding illness points to interpolate
 indInt=find(Yfit~=0);
 indGr=[];
@@ -333,7 +343,7 @@ for i=1:size(indInt,1)-1
     if(indInt(i)+1~=indInt(i+1))
         lesionSize=[lesionSize lesCounter];
         disp('diferente grupo')
-        indGr=[indGr i];
+        indGr=[indGr indInt(i)];
         indInt(i);
         indInt(i+1);
         lesCounter=1;
@@ -342,49 +352,34 @@ for i=1:size(indInt,1)-1
     end
 end
 lesionSize=[lesionSize lesCounter]
-indGr=[indGr i+1]
+indGr=[indGr indInt(i+1)]
 
 %%Post-Processing (deleting small lesions)
-izq=1;
 lesiones=[];
 for i=1:numel(indGr)
     if lesionSize(i)>3
-        lesiones=[lesiones; round(mean(indInt(izq:indGr(i))))];
-        izq=indGr(i)+1;
+        lesiones=[lesiones; round(mean( (indGr(i)-lesionSize(i)+1:indGr(i)) ))];
+        lesionSize(i)
+    else
+        Yfit(indGr(i)-lesionSize(i)+1:indGr(i))=0;
     end
 end
 
+yffl=strcat('results/',DT(j).name,MHD(vessel_i).name(1:end-4),ML,'.txt');
+dlmwrite(yffl,[yTarget (Yfit)*40],'Delimiter',' ',...
+                'Newline','unix','precision',6);
+            
+% Saving reference for creaCoro
+indInt2=find(reference(:,6)>0);
+reference(indInt2,6)=40;
+
+yffl=strcat('results/',DT(j).name,MHD(vessel_i).name(1:end-4),ML,'_REFERENCE.txt');
+dlmwrite(yffl,[reference(:,1:7)],'Delimiter',' ',...
+                'Newline','unix','precision',6);
+            
+            
 % Saving medium points of lesions
-yffl=strcat('results/',DT(j).name,MHD(vessel_i).name(1:end-4),modelFile,'_LPos.txt');
+yffl=strcat('results/',DT(j).name,MHD(vessel_i).name(1:end-4),ML,'_LPos.txt');
 dlmwrite(yffl,[yTarget(lesiones(:)',1:3) Yfit(lesiones(:)')],'Delimiter',' ',...
                 'Newline','unix','precision',6);
 
-%% finding illness points in the reference
-indInt2=find(reference(z0,7)>2);
-indGr2=[];
-lesCounter2=1;
-lesionSize2=[];
-for i=1:size(indInt,1)-1
-    if(indInt(i)+1~=indInt(i+1))
-        lesionSize2=[lesionSize2 lesCounter2];
-        disp('diferente grupo')
-        indGr2=[indGr i];
-        indInt2(i);
-        indInt2(i+1);
-        lesCounter2=1;
-    else
-        lesCounter=lesCounter+1;
-    end
-end
-lesionSize2=[lesionSize2 lesCounter2]
-indGr2=[indGr2 i+1]
-
-%%Post-Processing (deleting small lesions)
-izq2=1;
-lesiones2=[];
-for i=1:numel(indGr2)
-    if lesionSize2(i)>3
-        lesiones2=[lesiones2; round(mean(indInt2(izq2:indGr2(i))))];
-        izq2=indGr2(i)+1;
-    end
-end

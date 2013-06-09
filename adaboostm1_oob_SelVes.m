@@ -1,16 +1,3 @@
-%***************************
-%*  RUSBoost:
-%*  Out of bag
-%   289 features (distance from ostium)
-%   
-%*  2013,6,2
-%*  References :
-%*  Seiffert et al, 
-%*  
-%***************************
-%
-%******************************
-
 clear all; clc; close all;
 mkdir models
 %% Flags
@@ -49,45 +36,40 @@ tabulate(yTrain)
 tabulate(yTest(:,4))
 
 
-%% RUSBOOST
+%% Randon Forest
 cltree = ClassificationTree.template('minleaf',5);
 tic
-rusTree = fitensemble(trainData,yTrain,'RUSBoost',250,cltree,...
+adb = fitensemble(trainData,yTrain,'AdaBoostM1',250,cltree,...
     'LearnRate',0.1,'nprint',100,'type','classification');
 toc
-tic
-rusTree2 = fitensemble([trainData; testData],[yTrain;yTest(:,4)] ,'RUSBoost',250,cltree,...
-    'LearnRate',0.1,'nprint',100,'type','classification','kfold',4)%,...
-toc
 
-
+load models/rb250_tm0_oob_SelVes_288
 
 %% Test
 figure1=figure('Color',[1 1 1]);
 hold on;
-plot(loss(rusTree,testData,yTest(:,4),'mode','cumulative'),'k-.');
+plot(loss(adb,testData,yTest(:,4),'mode','cumulative'),'r-');
 grid on;
-hold on;
-plot(kfoldLoss(rusTree2,'mode','cumulative'),'r.');
-hold off;
-title('RB VS RF Comparison');
-xlabel('Number of trees');
-ylabel('Classification error');
-legend('RUSBoost','Random Forest','Location','NE');
+
+
+
+
 
 % check confusion matrix
 tic
-Yfit = predict(rusTree,testData);
+Yfit = predict(adb,testData);
 toc
 tab = tabulate(yTest(:,4));
 cm=confusionmat(yTest(:,4),Yfit)
 cm2=bsxfun(@rdivide,cm,tab(:,2))*100
+
 
 % Measures
 TN=cm(1,1);
 TP=cm(2,2);
 FN=cm(1,2);
 FP=cm(2,1);
+
 %TrueNegat TruePosi FalseNeg FalsePosit
 [TN TP FN FP]
 
@@ -97,11 +79,11 @@ SPC=TN/(FP+TN);
 ACC=(TP+TN)/(TP+FN+FP+TN);
 PPV=TP/(TP+FP);
 NPV=TN/(FN+TN);
+
 %Sensit Specifi Accuracy FalsePRate PositiPValue NegPValue
 [SEN SPC ACC FPR PPV NPV]
 
-save models/rb250_tm0_oob_SelVes_288 rusTree rusTree2 cm cm2
-
+save models/rbVSrf_250_tm0_oob_SelVes_288 rusTree rf adb
 
 %% Roc curve
 % binary class

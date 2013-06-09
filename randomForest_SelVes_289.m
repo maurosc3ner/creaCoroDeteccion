@@ -55,7 +55,7 @@ load models/rb250_tm0_oob_SelVes_288 rusTree rusTree2 cm cm2
 %% Test
 figure1=figure('Color',[1 1 1]);
 hold on
-plot(oobError(rf));
+plot(oobError(rf),'b--');
 grid on;
 hold on;
 plot(kfoldLoss(rf2,'mode','cumulative'),'r.');
