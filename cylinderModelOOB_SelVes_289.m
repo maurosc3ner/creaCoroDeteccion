@@ -34,52 +34,58 @@ includeDistance=false;
 trainingMode=0;
 
 %% Cylinder mask creation
+% Parameters to define the cylinder: minimun radius, maximum radius,
+% number of radiuses to evaluate, cylinder height.
 min_r=1;
 max_r=3.5;
 rSampl=3;
 radiusStep=linspace(min_r,max_r,rSampl);
 L=5;
-
 t = pi/4:pi/4:2*pi;
 theta = 0:180;
+
 trainData=[];
 yTrain=[];
 numves=0;
-tic
+
 %% dataset lecture
+% Every dataset is indexed.
+tic
 for j =1:numel(DT),
     
-    %% Files lecture
+    %% Vessel lecture
     inDT=strcat(inDir,DT(j).name);
-    %busqueda de vasos
+    % Every vessel within the dataset folder is indexed.
     MHD= dir(fullfile(inDT,'*.mhd'));
     
     vesselTrainData=[];
     vesselyTrain=[];
     
     for vessel_i=1:numel(MHD),
-       
+        % A vessel is loaded (reference file points, image.mhd)
         refFilename=fullfile(inDT,[MHD(vessel_i).name(1:end-4) '.txt'])
-        
         cprFilename=fullfile(inDT,MHD(vessel_i).name);
         reference=load(refFilename);
         % calling Ostium distance feature
         dist=OstDistance(reference);
         % attaching to the reference file
         reference=[reference, dist];
-        
+       
         info = mha_read_header(cprFilename)
         V = mha_read_volume(info);
         numves=numves+1;
         %Process
         [dims]=size(V);
+        % Volume gradient is computed one time.
         [fx fy fz]=gradient(V);
+        % Cylinder coordinates are defined, center, limits, among
+        % others.
         x0 = round(dims(1)/2); y0 = round(dims(2)/2);
         sliceOffset=round(dims(3)*.05);
-
-        for steps=sliceOffset:1:dims(3)-L-sliceOffset       % loop through CPR
-
+        % Surfing through the CPR
+        for steps=sliceOffset:1:dims(3)-L-sliceOffset       
             z0=round(L/2)+steps;
+            
             % 3D Sampling pattern
             longitudinalIntensityFeature=zeros(27,L);
             feature=[];
@@ -92,21 +98,18 @@ for j =1:numel(DT),
                 if visualDebug
                     imagesc(patternSlice),axis square;
                 end
-
-                for radio=radiusStep                % loop through radius' scales
+                 % loop through radius' scales
+                for radio=radiusStep               
                     R0 = radio/info.PixelDimensions(1);
                     yi = R0*cos(t);
                     xi = R0*sin(t);
-
-                    %Mask initialization
-                    %             VM=uint8(zeros(dims(1),dims(2),20));
-                    %             patternSlice=uint8(zeros(dims(1),dims(2)));
 
                     % 2D Sampling pattern
                     pr_r=sub2ind([dims(1) dims(2)],round(x0+xi),round(y0+yi));
                     patternSlice(pr_r)=1;
 
                     %% Intensity feature
+                    
                     intensitySlice=Slice(pr_r)';
                     %[min(intensitySlice) max(intensitySlice) mean(intensitySlice)];
 

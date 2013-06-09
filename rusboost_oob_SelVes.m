@@ -103,17 +103,5 @@ NPV=TN/(FN+TN);
 save models/rb250_tm0_oob_SelVes_288 rusTree rusTree2 cm cm2
 
 
-%% Roc curve
-% binary class
-[fpr,tpr] = perfcurve(yTrain(istest),Yfit,1);
-% Multi class
-%[fpr,tpr] = perfcurve(yTrain(istest),Yfit,2,'negClass',[0 1 3]);
-figure;
-plot(fpr,tpr);
-xlabel('False Positive Rate');
-ylabel('True Positive Rate');
 
-roc(yTrain(istest),Yfit)
-
-plotconfusion(yTrain(istest),Yfit);
 
