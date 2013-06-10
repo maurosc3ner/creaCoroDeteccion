@@ -1,5 +1,5 @@
 %***************************
-%*  3D Cylinder Model for Training and Testing
+%*  3D Cylinder Model for Training and Testing feature matrix
 %*  Features: I,Gr,Gt,Radon, Longitudinal, Distance.
 %   
 %   Validation strategy: Out of bag
@@ -8,19 +8,12 @@
 %*  Mittal10
 %*  
 %***************************
-%
+%   Author: Esteban Correa, maurosc3ner@gmail.com
 %******************************
-
-
 mkdir tmp_data;
-
 clear all; clc; close all;
 addpath src
 addpath ../ReadData3D_version1k/mha
-inDir = 'Training_SelVes/';
-
-%busqueda de carpetas
-DT= dir(fullfile(inDir,'dt*'));
 
 %% Flags
 visualDebug=false;
@@ -28,9 +21,6 @@ includeDistance=false;
 %% Training mode (decision criteria)
 % 0-> binary 0=healthy,soft|1=calc,mix
 % 1-> binary 0=healthy,soft,mix|1=calc
-% 2-> binary 0 healthy|1=calc,mix,narr>50
-% 3-> multi 0=healthy|1=calc,mix|2=narr>50
-% 4-> binary 0=healthy|1=grade narrowing>50
 trainingMode=0;
 
 %% Cylinder mask creation
@@ -44,13 +34,14 @@ L=5;
 t = pi/4:pi/4:2*pi;
 theta = 0:180;
 
+%% dataset lecture
+%dataset indexing
+inDir = 'Training_SelVes/';
+DT= dir(fullfile(inDir,'dt*'));
+
+tic
 trainData=[];
 yTrain=[];
-numves=0;
-
-%% dataset lecture
-% Every dataset is indexed.
-tic
 for j =1:numel(DT),
     
     %% Vessel lecture
@@ -60,7 +51,6 @@ for j =1:numel(DT),
     
     vesselTrainData=[];
     vesselyTrain=[];
-    
     for vessel_i=1:numel(MHD),
         % A vessel is loaded (reference file points, image.mhd)
         refFilename=fullfile(inDT,[MHD(vessel_i).name(1:end-4) '.txt'])
@@ -73,7 +63,6 @@ for j =1:numel(DT),
        
         info = mha_read_header(cprFilename)
         V = mha_read_volume(info);
-        numves=numves+1;
         %Process
         [dims]=size(V);
         % Volume gradient is computed one time.
@@ -147,29 +136,12 @@ for j =1:numel(DT),
                     %Queuing 12 features to the 36 features
                     cylFeature=[cylFeature radialFeature];
 
-                    if visualDebug
-                        hold on
-                        imagesc(patternSlice),axis square;
-                        quiver(x0+xi',y0+yi',ui(:,1),ui(:,2))
-                        quiver(x0+xi',y0+yi',ti(:,1),ti(:,2),'Color','r');
-                        colormap gray
-                        hold off
-                        pause(0.5)
-                    end
-                    %key=input('input');
-
                 end    %rof radius step
-                %radio=radiusStep(end);
-                %R0 = radio/info.PixelDimensions(1);
                 
-                %[RT,xp] = radon(Slice(round(dims(1)/2-R0):round(dims(1)/2+R0),...
-                 %       round(dims(2)/2-R0):round(dims(2)/2+R0)),theta);
-                
-
                 longitudinalFeature(lIndex,:)=[cylFeature];
                 feature=[feature cylFeature];
                 lIndex=lIndex+1;
-                %w = waitforbuttonpress;
+                
             end    %rof cylinder height=L
             % 1:9 first circle, 10:18 second one...
             A=[min(longitudinalFeature,[],1) max(longitudinalFeature,[],1) mean(longitudinalFeature,1) ];
@@ -181,6 +153,8 @@ for j =1:numel(DT),
                 feature=[feature reference(z0,8)];
             end
             vesselTrainData=[vesselTrainData;feature];
+            
+            %% Adding labels
             if trainingMode==0
                 if reference(z0,6)>1.0
                     vesselyTrain=[vesselyTrain; 1];
@@ -193,54 +167,23 @@ for j =1:numel(DT),
                 else
                     vesselyTrain=[vesselyTrain; 0];
                 end
-                
-            elseif trainingMode==2
-                if reference(z0,6)>1.0
-                    vesselyTrain=[vesselyTrain; 1];
-                elseif reference(z0,7)>1
-                    vesselyTrain=[vesselyTrain; 1];
-                else
-                    vesselyTrain=[vesselyTrain; 0];
-                end
-            elseif trainingMode==3
-                if reference(z0,6)>1.0
-                    vesselyTrain=[vesselyTrain; 1];
-                elseif reference(z0,7)>1
-                    vesselyTrain=[vesselyTrain; 2];
-                else
-                    vesselyTrain=[vesselyTrain; 0];
-                end 
-            elseif trainingMode==4
-                if reference(z0,7)>1.0
-                    vesselyTrain=[vesselyTrain; 1];
-                else
-                    vesselyTrain=[vesselyTrain; 0];
-                end
             else
                 vesselyTrain=[vesselyTrain; reference(z0,6)];
             end
-           % yTrain=[yTrain; reference(z0,6)];
-
-            %imagesc(V(:,:,z0)),axis square;colormap gray, title(strcat('cylinder pos:',num2str(z0)));
-            %pause(0.1)
-            
+          
         end   %rof process vessel
         
-        
-        %key=input('key');
     end      %rof process dataset
-    %w = waitforbuttonpress;
     trainData=[trainData;vesselTrainData];
     yTrain=[yTrain; vesselyTrain];
 end
 toc
 
-numves
 
-%% Selective Testing Segment lecture
+%% Out-of-bag Testing
 inDir = 'Testing_SelVes/';
 
-%busqueda de carpetas
+% dataset indexing
 DT= dir(fullfile(inDir,'dt*'));
 testData=[];
 yTest=[];
@@ -338,24 +281,11 @@ for j =1:numel(DT),
 
                     %Queuing 12 features to the 36 features
                     cylFeature=[cylFeature radialFeature];
-
-                    if visualDebug
-                        hold on
-                        imagesc(patternSlice),axis square;
-                        quiver(x0+xi',y0+yi',ui(:,1),ui(:,2))
-                        quiver(x0+xi',y0+yi',ti(:,1),ti(:,2),'Color','r');
-                        colormap gray
-                        hold off
-                        pause(0.5)
-                    end
-                    %key=input('input');
-
                 end    %rof radius step
 
                 longitudinalFeature(lIndex,:)=[cylFeature];
                 feature=[feature cylFeature];
                 lIndex=lIndex+1;
-                %w = waitforbuttonpress;
             end    %rof cylinder height=L
             % 1:9 first circle, 10:18 second one...
             A=[min(longitudinalFeature,[],1) max(longitudinalFeature,[],1) mean(longitudinalFeature,1) ];
@@ -386,52 +316,14 @@ for j =1:numel(DT),
                     vesselyTest=[vesselyTest;...
                     [reference(z0,1) reference(z0,2) reference(z0,3) 0.0]];
                 end
-            %%    
-            elseif trainingMode==2
-                if reference(z0,6)>1.0
-                    vesselyTest=[vesselyTest; ...
-                        [reference(z0,1) reference(z0,2) reference(z0,3) 1.0]];
-                elseif reference(z0,7)>1
-                    vesselyTest=[vesselyTest;...
-                        [reference(z0,1) reference(z0,2) reference(z0,3) 1.0]];
-                else
-                    vesselyTest=[vesselyTest; ...
-                        [reference(z0,1) reference(z0,2) reference(z0,3) 0.0]];
-                end    
-            %% multi 0=healthy|1=calc,mix|2=narr>50
-            elseif trainingMode==3
-                if reference(z0,6)>1.0
-                    vesselyTest=[vesselyTest; ...
-                        [reference(z0,1) reference(z0,2) reference(z0,3) 1.0]];
-                elseif reference(z0,7)>1
-                    vesselyTest=[vesselyTest;...
-                        [reference(z0,1) reference(z0,2) reference(z0,3) 2.0]];
-                else
-                    vesselyTest=[vesselyTest; ...
-                        [reference(z0,1) reference(z0,2) reference(z0,3) 0.0]];
-                end
-            %% binary 0=healthy|1=grade narrowing>50
-            elseif trainingMode==4
-                disp('modo 4')
-                if reference(z0,7)>1.0
-                    vesselyTest=[vesselyTest;...
-                    [reference(z0,1) reference(z0,2) reference(z0,3) 1.0]];
-                else
-                    vesselyTest=[vesselyTest;...
-                    [reference(z0,1) reference(z0,2) reference(z0,3) 0.0]];
-                end    
-            %% Others 
+            %% others    
             else
                 vesselyTest=[vesselyTest;...
                 [reference(z0,1) reference(z0,2) reference(z0,3) reference(z0,6)]];
             end
             
         end   %rof process vessel
-        
-        
-        %key=input('key');
     end      %rof process dataset
-    %w = waitforbuttonpress;
     testData=[testData;vesselTestData];
     yTest=[yTest; vesselyTest];
 end
@@ -439,5 +331,5 @@ toc
 
 
 if trainingMode==0
-    save 'tmp_data/tm0_oob_L5_SelVes288' trainData yTrain testData yTest
+    save 'tmp_data/featureMatrix' trainData yTrain testData yTest
 end
