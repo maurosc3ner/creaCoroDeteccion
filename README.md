@@ -4,9 +4,7 @@
 
 Semi-automatic Centerline Extraction Framework
 
-Efficiently obtaining a reliable coronary artery centerline from computed tomography angiography data is relevant in clinical practice. 
-
-This project aims to implement centerline extraction semi-automatic methods. It is based on two seed points (start and end) placed by the radiologist. Then, It extracts interactively the centerline using a medialness image [1][2] and a minimal-cost path algorithm [3]. All code has been developed entirely in C++, using ITK and VTK libraries and the medical imaging framework CreaTools [4]. Currently, further medialness techniques are being implemented in order to do a comparison between them. 
+Efficiently obtaining a reliable coronary artery centerline from computed tomography angiography data is relevant in clinical practice. This project aims to implement centerline extraction semi-automatic methods. It is based on two seed points (start and end) placed by the radiologist. Then, It extracts interactively the centerline using a medialness image [1][2] and a minimal-cost path algorithm [3]. All code has been developed entirely in C++, using ITK and VTK libraries and the medical imaging framework CreaTools [4]. Currently, further medialness techniques are being implemented in order to do a comparison between them. 
 
 
 # References:
