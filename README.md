@@ -1,5 +1,6 @@
 # creaCoroDeteccion
 
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/OY3yUuBUFgc/0.jpg)](http://www.youtube.com/watch?v=OY3yUuBUFgc "creaCoro DEMO")
 
 Semi-automatic Centerline Extraction Framework
 
